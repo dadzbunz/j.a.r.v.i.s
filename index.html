@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>J.A.R.V.I.S</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JARVIS">
+<meta name="theme-color" content="#010a0f">
+<link rel="apple-touch-icon" href="icon.png">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+<div class="scan-sweep"></div>
+
+<div id="header">
+  <div>
+    <div class="logo">J.A.R.V.I.S</div>
+    <div class="tagline">Just A Rather Very Intelligent System</div>
+  </div>
+  <div id="clock">--:--:--</div>
+</div>
+
+<!-- SETUP MODAL -->
+<div id="api-modal">
+  <div class="modal-title">◈ INITIALIZE JARVIS ◈</div>
+  <div class="modal-sub">
+    JARVIS runs on Groq's free API — fast, capable, and $0/month.<br>
+    Your key stays on this device only.
+  </div>
+  <input class="modal-input" type="password" id="api-key-input" placeholder="gsk_..." autocomplete="off" autocorrect="off" spellcheck="false">
+  <button class="modal-btn" onclick="initJarvis()">▶ ENGAGE SYSTEMS</button>
+  <div class="modal-link">
+    Free key (30 sec, no card) at <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>
+  </div>
+  <div class="modal-link" style="margin-top:8px; opacity:0.6;">
+    Tip: Add this page to your Home Screen for the full app experience
+  </div>
+</div>
+
+<div id="main">
+
+  <div id="panel-left">
+    <div class="panel">
+      <div class="panel-title">⬡ System Status</div>
+      <div class="status-item">
+        <div class="status-label">CPU <span class="status-val" id="cpu-val">—</span></div>
+        <div class="bar-track"><div class="bar-fill" id="cpu-bar" style="width:0%"></div></div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">MEMORY <span class="status-val" id="mem-val">—</span></div>
+        <div class="bar-track"><div class="bar-fill" id="mem-bar" style="width:0%"></div></div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">BATTERY <span class="status-val" id="bat-val">—</span></div>
+        <div class="bar-track"><div class="bar-fill" id="bat-bar" style="width:0%"></div></div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">NETWORK <span class="status-val" id="net-val">—</span></div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">UPTIME <span class="status-val" id="uptime-val">00:00:00</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">⬡ Connected</div>
+      <div class="connected-item"><span>Groq API</span><div class="dot" id="api-dot" style="background:var(--text-dim);box-shadow:none"></div></div>
+      <div class="connected-item"><span>Voice Engine</span><div class="dot" id="voice-dot" style="background:var(--text-dim);box-shadow:none"></div></div>
+      <div class="connected-item"><span>Local Memory</span><div class="dot" id="mem-dot"></div></div>
+      <div class="connected-item"><span>iOS Shortcuts</span><div class="dot" id="shortcuts-dot" style="background:var(--text-dim);box-shadow:none"></div></div>
+    </div>
+
+    <div class="panel" style="flex:1">
+      <div class="panel-title">⬡ Directives</div>
+      <div style="font-size:10px; color:var(--text-dim); line-height:1.8; letter-spacing:1px;">
+        01. Protect the user<br>
+        02. Safeguard privacy<br>
+        03. Learn &amp; adapt<br>
+        04. Act efficiently<br>
+        05. Anticipate needs<br>
+        06. Perform real tasks
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-center" class="panel">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <div class="panel-title" style="margin:0">⬡ Voice Interface</div>
+      <div style="font-size:9px; color:var(--text-dim); letter-spacing:2px;" id="conv-count">0 EXCHANGES</div>
+    </div>
+
+    <div id="waveform-wrap"><canvas id="waveform"></canvas></div>
+    <div id="status-line">● SYSTEM READY — AWAITING INPUT</div>
+    <div id="chat-area"></div>
+
+    <div id="input-area">
+      <input id="text-input" type="text" placeholder='Type or tap the mic...' autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button class="btn" id="mic-btn" onclick="toggleVoice()" title="Voice">🎙</button>
+      <button class="btn" onclick="sendText()" title="Send">⏎</button>
+      <button class="btn" onclick="clearChat()" title="Clear" style="font-size:12px">⌫</button>
+    </div>
+  </div>
+
+  <div id="panel-right">
+    <div class="panel">
+      <div class="panel-title">⬡ Your Profile</div>
+      <div class="memory-item">
+        <div class="memory-key">Name</div>
+        <input class="edit-input" id="prof-name" value="Sir" oninput="saveProfile()">
+      </div>
+      <div class="memory-item">
+        <div class="memory-key">Focus Areas</div>
+        <input class="edit-input" id="prof-interests" value="Trading, Coding, AI, Fitness" oninput="saveProfile()">
+      </div>
+      <div class="memory-item">
+        <div class="memory-key">Goals</div>
+        <input class="edit-input" id="prof-goals" value="Financial freedom, build AI" oninput="saveProfile()">
+      </div>
+      <div class="memory-item">
+        <div class="memory-key">Conversations Remembered</div>
+        <div class="memory-val" id="mem-convs">0</div>
+      </div>
+    </div>
+
+    <div class="panel" style="flex:1">
+      <div class="panel-title">⬡ Real Actions JARVIS Can Take</div>
+      <div style="font-size:10px; line-height:2; color:var(--text-dim);">
+        <div>✓ <span style="color:var(--text)">Open Maps / Directions</span></div>
+        <div>✓ <span style="color:var(--text)">Call / Text a number</span></div>
+        <div>✓ <span style="color:var(--text)">Draft an email</span></div>
+        <div>✓ <span style="color:var(--text)">Add calendar events</span></div>
+        <div>✓ <span style="color:var(--text)">Check real weather</span></div>
+        <div>✓ <span style="color:var(--text)">Run iOS Shortcuts</span></div>
+        <div>✓ <span style="color:var(--text)">Open any app/URL</span></div>
+        <div>✓ <span style="color:var(--text)">Copy text / Share sheet</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">⬡ Voice Engine</div>
+      <select id="voice-select" style="width:100%; background:rgba(0,20,30,0.9); border:1px solid var(--cyan-border); color:var(--text); padding:4px; font-family:'Share Tech Mono'; font-size:10px; border-radius:3px; outline:none;">
+        <option value="">Loading...</option>
+      </select>
+      <div style="margin-top:8px; font-size:10px; color:var(--text-dim);">Speed</div>
+      <input type="range" id="rate-slider" min="0.7" max="1.4" step="0.05" value="0.95" style="width:100%; accent-color:var(--cyan); margin-top:4px;">
+    </div>
+  </div>
+
+  <div id="console-panel" class="panel">
+    <div id="console-log"></div>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
